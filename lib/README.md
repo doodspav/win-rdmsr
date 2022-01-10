@@ -45,3 +45,15 @@ Reasons for crash:
 - `STATUS_ACCESS_VIOLATION` exception raised if caller does not have adequate privileges
 
 The exception can be caught and checked for using SEH.
+
+## Dynamic Linking
+
+Windows requires symbols exported by a shared library (DLL) to be annotated.
+
+The declarations for these symbols should be marked `__declspec(dllimport)` when
+building the library, and `__declspec(dllexport)` when linking with the library.
+
+This library comes with no build system, so these annotations have been omitted.
+
+If you wish to build this as a shared library, you should mark the functions
+`rdmsr_init()` and `rdmsr(...)` with these annotations in `rdmsr.h`.
