@@ -11,6 +11,9 @@
 #define IOCTL_RDMSR \
     CTL_CODE((0x8000 | RDMSR_HEX), (0x800 | RDMSR_HEX), METHOD_BUFFERED, FILE_READ_ACCESS)
 
+#define ATOMIC_LOAD_HANDLE(lvalue) \
+    InterlockedCompareExchangePointer(&lvalue, NULL, NULL)
+
 
 static HANDLE g_driver = NULL;
 
@@ -19,7 +22,7 @@ int rdmsr_init(void)
 {
     HANDLE driver;
 
-    if (g_driver != NULL) { return 1; }
+    if (ATOMIC_LOAD_HANDLE(g_driver) != NULL) { return 1; }
 
     driver = CreateFileA(
         RDMSR_PATH,
@@ -30,7 +33,7 @@ int rdmsr_init(void)
 
     if (driver == INVALID_HANDLE_VALUE)
     {
-        if (g_driver != NULL) { return 1; }
+        if (ATOMIC_LOAD_HANDLE(g_driver) != NULL) { return 1; }
         else { return 0; }
     }
 
@@ -40,7 +43,7 @@ int rdmsr_init(void)
         NULL
     );
 
-    if (g_driver != driver) { CloseHandle(driver); }
+    if (ATOMIC_LOAD_HANDLE(g_driver) != driver) { CloseHandle(driver); }
 
     return 1;
 }
@@ -54,12 +57,12 @@ int rdmsr(
     DWORD returned;
     BOOL status;
 
-    assert(g_driver != NULL);
+    assert(ATOMIC_LOAD_HANDLE(g_driver) != NULL);
     assert(sizeof(address) == 4);
     assert(sizeof(*out_value) == 8);
 
     status = DeviceIoControl(
-        g_driver, IOCTL_RDMSR,
+        ATOMIC_LOAD_HANDLE(g_driver), IOCTL_RDMSR,
         &address, sizeof(address),
         out_value, sizeof(*out_value),
         &returned, NULL
