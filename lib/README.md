@@ -19,6 +19,7 @@ The following two functions are provided:
 ```c
 /*
  * attempts to open a driver handle
+ *
  * - success: returns 1
  * - error: returns 0 and Last-Error code is set
  */
@@ -31,6 +32,7 @@ Reasons for failure:
 ```c
 /*
  * attempts to read an MSR
+ *
  * - supported address: sets *out_value and returns 1
  * - unsupported address: returns 0
  * - this function may also "crash" if prerequisites are not met
